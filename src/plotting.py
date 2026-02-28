@@ -171,7 +171,7 @@ def plot_loss_history(
     ax.set_ylabel("Total Loss")
     ax.set_title(f"{section_name} - Total Loss (Round {round_num})")
     ax.grid(True, alpha=0.3)
-    # pde loss and ic loss
+    # pde loss, ic loss, data loss
     ax = axes[1]
     ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
     ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
