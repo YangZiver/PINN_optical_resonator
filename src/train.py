@@ -254,20 +254,20 @@ class Train:
             + (alpha - g) / 2 * u
             - beta2 / 2 * v_tt
             - beta3 / 6 * u_ttt
-            - g / (2 * Omega_g**2) * u_tt
+            #- g / (2 * Omega_g**2) * u_tt
             + gamma * messWithv
             + gamma / omega0 * messWithu_t
-            - gamma * T_R * v * intensity_t
+            #- gamma * T_R * v * intensity_t
         )
         residual_imag = (
             v_z
             + (alpha - g) / 2 * v
             + beta2 / 2 * u_tt
             - beta3 / 6 * v_ttt
-            - g / (2 * Omega_g**2) * v_tt
+            #- g / (2 * Omega_g**2) * v_tt
             - gamma * messWithu
             + gamma / omega0 * messWithv_t
-            + gamma * T_R * u * intensity_t
+            #+ gamma * T_R * u * intensity_t
         )
         pde_loss = torch.mean(residual_real**2 + residual_imag**2)
         return pde_loss
