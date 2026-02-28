@@ -40,11 +40,11 @@ Omega_g: float = 2.0 * (cc / wll - cc / wlh) * np.pi #disperison bandwidth
 # initial pulse at z = 0
 power: float = 0.8 # initial pulse power
 Chrip: float = 0.0
-initial_pulse: Tensor = (
-    torch.sqrt(power)
+initial_pulse: NDArray = (
+    np.sqrt(power)
     * 1
-    / torch.cosh(T_grid / T0_width)
-    * torch.exp(-1j * 0.5 * Chrip * (T_grid / T0_width) ** 2)
+    / np.cosh(T_grid / T0_width)
+    * np.exp(-1j * 0.5 * Chrip * (T_grid / T0_width) ** 2)
 )
 # device parameters
 # EDF(Erbium-Doped Fiber)

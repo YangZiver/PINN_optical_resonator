@@ -1,5 +1,6 @@
 # main.py
 import numpy as np
+import torch
 from torch import Tensor
 from numpy.fft import fftshift, ifft
 from numpy.typing import NDArray
@@ -32,7 +33,8 @@ def main():
     print(f"{'=' * 60}")
     ssf = ssf_solver.SSFSolver()
     device = utils.setting_device()
-    current_pulse: Tensor = parameters.initial_pulse
+    current_pulse: Tensor = torch.tensor(parameters.initial_pulse,
+                                         device=device)
     wl_axis, wl_sorted_indices = utils.compute_wavelength_axis()
     for round_num in range(1, parameters.rounds + 1):
         print(f"\n{'=' * 60}")
