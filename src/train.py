@@ -143,7 +143,7 @@ class Train:
                                        pulse: Tensor) -> tuple[NDArray, NDArray]:
         """compute pulse intensity and specturm intensity"""
         intensity = torch.abs(pulse) ** 2
-        spec_complex = torch.fft.fftshift(np.fft.fft(pulse))
+        spec_complex = torch.fft.fftshift(torch.fft.fft(pulse))
         spec_intensity = torch.abs(spec_complex) ** 2
         spec_db = 10 * torch.log10(spec_intensity + 1e-16)
         wl_axis, sorted_indices = self.compute_wavelength_axis()
