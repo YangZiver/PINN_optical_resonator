@@ -148,7 +148,7 @@ class Train:
         spec_db = 10 * torch.log10(spec_intensity + 1e-16)
         wl_axis, sorted_indices = self.compute_wavelength_axis()
         spec_db_sorted = spec_db[sorted_indices]
-        s_min, s_max = np.min(spec_db_sorted), np.max(spec_db_sorted)
+        s_min, s_max = torch.min(spec_db_sorted), torch.max(spec_db_sorted)
         if s_max > s_min:
             spec_norm = (spec_db_sorted - s_min) / (s_max - s_min)
         else:
