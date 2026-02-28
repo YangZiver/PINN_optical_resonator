@@ -3,14 +3,15 @@ import numpy as np
 from numpy.typing import NDArray
 import torch
 from torch.autograd import grad
+from torch import Tensor
 import multiprocessing
 import parameters
 import os
 from typing import Callable
 
-def normalize_input(x: NDArray | torch.Tensor,
+def normalize_input(x: NDArray | Tensor,
                     max_x: float = None,
-                    min_x: float = None) -> torch.Tensor | NDArray:
+                    min_x: float = None) -> Tensor | NDArray:
     """normalize x to [-1, 1]"""
     return 2.0 * (x - min_x) / (max_x - min_x) - 1.0
 
@@ -34,31 +35,46 @@ def setting_device() -> torch.device:
     print(f">>> Start computing | used device: {device}")
     return device
 
-def gradients(u: torch.Tensor,
-              x: torch.Tensor) -> torch.Tensor:
+def gradients(u: Tensor,
+              x: Tensor) -> Tensor:
     return grad(
         u, x, grad_outputs=torch.ones_like(u), create_graph=True, retain_graph=True
     )[0]
 
 
-def latin_hypercube_sampling(n: int,
+def latin_hypercube_sampling(
+    n: int,
     dim: int,
-    bounds: list[list[float]]=None) -> NDArray:
-    samples = np.zeros((n, dim))
-    for i in range(dim):
-        samples[:, i] = np.random.permutation(n)
-
-    samples = (samples + np.random.rand(n, dim)) / n
-    if bounds is not None:
+    bounds: list[list[float]]=None,
+    device: torch.device = None) -> NDArray | Tensor:
+    if device is None:
+        samples = np.zeros((n, dim))
         for i in range(dim):
-            low, high = bounds[i]
-            samples[:, i] = low + samples[:, i] * (high - low)
-    return samples
+            samples[:, i] = np.random.permutation(n)
+
+        samples = (samples + np.random.rand(n, dim)) / n
+        if bounds is not None:
+            for i in range(dim):
+                low, high = bounds[i]
+                samples[:, i] = low + samples[:, i] * (high - low)
+        return samples
+    else:
+        # use torch
+        samples = torch.zeros(n, dim, device=device)
+        for i in range(dim):
+            perm = torch.randperm(n, device=device)
+            rand_frac = torch.rand(n, device=device)
+            samples[:, i] = (perm.float() + rand_frac) / n
+        if bounds is not None:
+            for i in range(dim):
+                low, high = bounds[i]
+                samples[:, i] = low + samples[:, i] * (high - low)
+        return samples
 
 
 
 def adam_optimizer(model: torch.nn.Module,
-                  loss_fn: Callable[[], torch.Tensor],
+                  loss_fn: Callable[[], Tensor],
                   model_name: str) -> None:
     optimizer_adam = torch.optim.Adam(model.parameters(), lr=parameters.lr_adam)
     for epoch in range(parameters.num_epochs_adam):
@@ -70,7 +86,7 @@ def adam_optimizer(model: torch.nn.Module,
             print(f"[{model_name}] Train Status: {epoch} rounds | Total Loss: {loss.item():.3e}")
 
 def lbfgs_optimizer(model: torch.nn.Module,
-                    loss_fn: Callable[[], torch.Tensor],
+                    loss_fn: Callable[[], Tensor],
                     model_name: str) -> None:
     optimizer_lbfgs = torch.optim.LBFGS(model.parameters(), 
                                         lr=parameters.lr_lbfgs, 

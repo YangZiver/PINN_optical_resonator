@@ -2,6 +2,7 @@
 import numpy as np
 import torch
 from torch import nn
+from torch import Tensor
 import parameters
 import utils
 class Pinn(nn.Module):
@@ -59,8 +60,9 @@ class Pinn(nn.Module):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
-    def forward(self, z_s: torch.Tensor,
-                T_s: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(self,
+                z_s: Tensor,
+                T_s: Tensor) -> tuple[Tensor, Tensor]:
         """
         input: z, T
         output: u, v

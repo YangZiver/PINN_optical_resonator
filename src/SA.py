@@ -1,5 +1,6 @@
 # SA.py
 import torch
+from torch import Tensor
 class SaturableAbsorber:
     def __init__(self, params: dict[str, float]) -> None:
         self.Tns = params['Tns']
@@ -7,7 +8,7 @@ class SaturableAbsorber:
         self.Esat = params['Esat']
         self.alpha_loss = 0.8
 
-    def apply(self, A: torch.Tensor) -> torch.Tensor:
+    def apply(self, A: Tensor) -> Tensor:
         I = torch.abs(A)**2
         I_max = torch.max(I)
         if I_max < 1e-12:

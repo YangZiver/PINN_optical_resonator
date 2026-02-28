@@ -3,6 +3,7 @@ import numpy as np
 from numpy.fft import fft, ifft, fftshift, ifftshift
 from numpy.typing import NDArray
 import torch
+from torch import Tensor
 
 class SSFSolver:
     """
@@ -14,7 +15,7 @@ class SSFSolver:
         pass
     
     def GNLSE_EDF(self,
-                  input_pulse: NDArray | torch.Tensor,
+                  input_pulse: NDArray | Tensor,
                   params: dict[str, float],
                   T_grid: NDArray) -> NDArray:
         """

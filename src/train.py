@@ -1,6 +1,7 @@
 # train.py
 import pinn
 import torch
+from torch import Tensor
 import numpy as np
 from numpy.typing import NDArray
 import utils
@@ -12,7 +13,7 @@ class Train:
                  section_name: str,
                  rounds: int,
                  params: dict[str, float],
-                 input_pulse: NDArray | torch.Tensor):
+                 input_pulse: NDArray | Tensor):
         self.section_name = section_name
         self.rounds = rounds
         self.params = params
@@ -75,8 +76,8 @@ class Train:
         self.v = input_pulse_imag
 
     def normalize_zT(self,
-                     z: torch.Tensor | NDArray,
-        t: torch.Tensor | NDArray) -> tuple[torch.Tensor, ...] |tuple[NDArray, ...]:
+        z: Tensor | NDArray,
+        t: Tensor | NDArray) -> tuple[Tensor, ...] |tuple[NDArray, ...]:
         """normalize (z, t) to [-1, 1]"""
         z_norm = utils.normalize_input(z,
                                        self.params['L'],
@@ -86,10 +87,13 @@ class Train:
                                        parameters.T_min)
         return (z_norm, t_norm)
 
-    def sampling_points(self) -> None:
+    def sampling_train_points(self) -> None:
         """sample some points to train"""
         bounds = [[0.0, self.params["L"]], [parameters.T_min, parameters.T_max]]
-        samples = utils.latin_hypercube_sampling(parameters.numPDE, 2, bounds)
+        samples = utils.latin_hypercube_sampling(parameters.numPDE,
+                                                 2,
+                                                 bounds,
+                                                 self.device)
         # PDE data
         z_physical_pde = samples[:, 0:1]  # keep 2 dimension
         t_physical_pde = samples[:, 1:2]
@@ -97,59 +101,51 @@ class Train:
         # ensure row vector
         z_norm_pde = z_norm_pde.reshape(-1, 1)
         t_norm_pde = t_norm_pde.reshape(-1, 1)
-        self.z_pde = torch.tensor(z_norm_pde, 
-                                  dtype=torch.float32,
-                                  device=self.device,
-                                  requires_grad=True)
-        self.t_pde = torch.tensor(t_norm_pde,
-                                  dtype=torch.float32,
-                                  device=self.device,
-                                  requires_grad=True)
+        self.z_pde = z_norm_pde.requires_grad_(True)
+        self.t_pde = t_norm_pde.requires_grad_(True)
         # ic_data
-        t_physical_ic = np.linspace(parameters.T_min, 
+        t_physical_ic = torch.linspace(parameters.T_min, 
                                     parameters.T_max,
-                                    parameters.numIC)
-        z_physical_ic = np.zeros_like(t_physical_ic)
+                                    parameters.numIC,
+                                    device=self.device).reshape(-1, 1)
+        z_physical_ic = torch.zeros_like(t_physical_ic,
+                                         device=self.device)
         z_norm_ic, t_norm_ic = self.normalize_zT(z_physical_ic, t_physical_ic)
-        z_norm_ic = z_norm_ic.reshape(-1, 1)
-        t_norm_ic = t_norm_ic.reshape(-1, 1)
+        self.z_ic = z_norm_ic.requires_grad_(True)
+        self.t_ic = t_norm_ic.requires_grad_(True)
+        # self.z_physical_pde = z_physical_pde.flatten()
+        # self.t_physical_pde = t_physical_pde.flatten()
+        # self.z_physical_ic = z_physical_ic.flatten()
+        # self.t_physical_ic = t_physical_ic.flatten()
 
-        self.z_ic = torch.tensor(z_norm_ic,
-                                 dtype=torch.float32,
-                                 device=self.device,
-                                 requires_grad=True)
-        self.t_ic = torch.tensor(t_norm_ic,
-                                 dtype=torch.float32,
-                                 device=self.device,
-                                 requires_grad=True)
-        self.z_physical_pde = z_physical_pde.flatten()
-        self.t_physical_pde = t_physical_pde.flatten()
-        self.z_physical_ic = z_physical_ic.flatten()
-        self.t_physical_ic = t_physical_ic.flatten()
+    def sampling_end_points(self) -> None:
+        """sample points at end of the fiber"""
+        # fiber end data
+        z_physical_end = torch.full((len(parameters.T_grid), 1),
+                                     self.params['L'],
+                                     device=self.device)
+        t_physical_end = torch.linspace(parameters.T_min,
+                                         parameters.T_max,
+                                         len(parameters.T_grid),
+                                         device=self.device).reshape(-1, 1)
+        self.z_end, self.t_end = self.normalize_zT(z_physical_end,
+                                         t_physical_end)
 
-    def query_pinn_solution(self) -> torch.Tensor:
+    def query_pinn_solution(self) -> Tensor:
         """
         get complex pulse solution from PINN
         """
-        z_end = self.params['L']
-        z_physical_data = np.full_like(parameters.T_grid, z_end)
-        t_physical_data = parameters.T_grid
-        z_norm, t_norm = self.normalize_zT(z_physical_data, t_physical_data)
-        z = torch.tensor(z_norm, dtype=torch.float32, device=self.device).reshape(-1, 1)
-        t = torch.tensor(t_norm, dtype=torch.float32, device=self.device).reshape(-1, 1)
         with torch.no_grad():
-            u, v = self.model.forward(z, t)
+            u, v = self.model.forward(self.z_end, self.t_end)
         return (u + 1j * v).squeeze()
 
     def compute_intensity_and_spectrum(self,
-                            u_end_np: NDArray,
-                            v_end_np: NDArray) -> tuple[NDArray, NDArray]:
+                                       pulse: Tensor) -> tuple[NDArray, NDArray]:
         """compute pulse intensity and specturm intensity"""
-        intensity = u_end_np ** 2 + v_end_np ** 2
-        pulse_complex_np = u_end_np + 1j * v_end_np
-        spec_complex = np.fft.fftshift(np.fft.fft(pulse_complex_np))
-        spec_intensity = np.abs(spec_complex)**2
-        spec_db = 10 * np.log10(spec_intensity + 1e-16)
+        intensity = torch.abs(pulse) ** 2
+        spec_complex = torch.fft.fftshift(np.fft.fft(pulse))
+        spec_intensity = torch.abs(spec_complex) ** 2
+        spec_db = 10 * torch.log10(spec_intensity + 1e-16)
         wl_axis, sorted_indices = self.compute_wavelength_axis()
         spec_db_sorted = spec_db[sorted_indices]
         s_min, s_max = np.min(spec_db_sorted), np.max(spec_db_sorted)
@@ -159,36 +155,36 @@ class Train:
             spec_norm = spec_db_sorted
         return intensity, spec_norm
 
-    def compute_wavelength_axis(self) -> tuple[NDArray, NDArray]:
+    def compute_wavelength_axis(self) -> tuple[Tensor, Tensor]:
         """
         compute wave length axis
         """
         n = len(parameters.T_grid)
         dt = parameters.T_grid[2] - parameters.T_grid[1]  
-        V = 2 * np.pi * np.linspace(-1/(2*dt), 1/(2*dt), n, endpoint=False)
+        V = 2 * np.pi * torch.linspace(-1/(2*dt),
+                                       1/(2*dt),
+                                       n,
+                                       device=self.device)
         freq = V / (2 * np.pi)
         f0 = parameters.omega0 / (2 * np.pi)
         wl = parameters.c_nm_ps / (freq + f0)
-        sorted_indices = np.argsort(wl)
+        sorted_indices = torch.argsort(wl)
         wl_sorted = wl[sorted_indices]
         return wl_sorted, sorted_indices
 
 
-    def analyze_model(self) -> dict[str, Union[torch.Tensor, NDArray]]:
-        output_pulse = self.query_pinn_solution()
-        u_end_np = (output_pulse.real).detach().cpu().numpy()
-        v_end_np = (output_pulse.imag).detach().cpu().numpy()
-        intensity, spec_norm = self.compute_intensity_and_spectrum(u_end_np,
-                                                                   v_end_np)
+    def analyze_model(self) -> dict[str, Union[Tensor, NDArray]]:
+        output_pulse: Tensor = self.query_pinn_solution()
+        intensity, spec_norm = self.compute_intensity_and_spectrum(output_pulse)
         return {
             'output_pulse': output_pulse,
-            'intensity': intensity,
-            'spec_norm': spec_norm,
+            'intensity': intensity.detach().cpu().numpy(),
+            'spec_norm': spec_norm.detach().cpu().numpy(),
         }
 
     def calculate_derivatives(self,
-                            z: torch.Tensor, 
-                            t: torch.Tensor) -> tuple[torch.Tensor, ...]:
+                            z: Tensor, 
+                            t: Tensor) -> tuple[Tensor, ...]:
         """calculate derivatives in pde"""
         u_pred, v_pred = self.model(z, t)
         d_z = 2.0 / self.params["L"]
@@ -224,7 +220,7 @@ class Train:
         )
 
 
-    def pde_loss(self) -> torch.Tensor:
+    def pde_loss(self) -> Tensor:
         """calculate pde loss"""
         beta2 = self.params["beta2"]
         beta3 = self.params["beta3"]
@@ -272,7 +268,7 @@ class Train:
         pde_loss = torch.mean(residual_real**2 + residual_imag**2)
         return pde_loss
 
-    def ic_loss(self) -> torch.Tensor:
+    def ic_loss(self) -> Tensor:
         """calculate initial condition loss"""
         u_ic, v_ic = self.model(self.z_ic, self.t_ic)
         ic_loss = torch.mean(
@@ -280,7 +276,7 @@ class Train:
         )
         return ic_loss
 
-    def data_loss(self) -> torch.Tensor:
+    def data_loss(self) -> Tensor:
         """calculate data loss"""
         self.load_reference_output(self.rounds, self.section_name)
         if hasattr(self, 'z_data') and self.z_data is not None:
@@ -296,7 +292,7 @@ class Train:
         # self.history["total_loss"].append(total_loss.item())
         return data_loss
 
-    def losses(self) -> torch.Tensor:
+    def losses(self) -> Tensor:
         """calcualte total loss"""
         pde_w = parameters.initial_weights['pde']
         ic_w = parameters.initial_weights['ic']
@@ -332,21 +328,24 @@ class Train:
         ref_tensor = torch.tensor(ref_np, dtype=torch.complex64, device=self.device)
         self.set_reference_output(ref_tensor)           
     
-    def set_reference_output(self, ref_output_tensor):
-        """save reference output and generate data sampling points"""
+    def set_reference_output(self, ref_output_tensor: Tensor):
+        """set reference output"""
         self.ref_real = ref_output_tensor.real.unsqueeze(1).to(self.device)
         self.ref_imag = ref_output_tensor.imag.unsqueeze(1).to(self.device)
-        z_physical_data = np.full_like(parameters.T_grid, self.params['L'])
-        t_physical_data = parameters.T_grid
-        z_norm_data, t_norm_data = self.normalize_zT(z_physical_data, t_physical_data)
-        self.z_data = torch.tensor(z_norm_data, dtype=torch.float32, device=self.device).reshape(-1, 1)
-        self.t_data = torch.tensor(t_norm_data, dtype=torch.float32, device=self.device).reshape(-1, 1)
-        self.z_data.requires_grad_(False)
-        self.t_data.requires_grad_(False)
+        # z_physical_data = torch.full((len(parameters.T_grid), 1),
+        #                              self.params['L'],
+        #                              device=self.device)
+        # t_physical_data = parameters.T_grid
+        # z_norm_data, t_norm_data = self.normalize_zT(z_physical_data, t_physical_data)
+        # self.z_data = torch.tensor(z_norm_data, dtype=torch.float32, device=self.device).reshape(-1, 1)
+        # self.t_data = torch.tensor(t_norm_data, dtype=torch.float32, device=self.device).reshape(-1, 1)
+        # self.z_data.requires_grad_(False)
+        # self.t_data.requires_grad_(False)
 
     def train_model(self):
         """use PINN to solve pde"""
-        self.sampling_points()
+        self.sampling_train_points()
+        self.sampling_end_points()
         self.get_input_pulse()
         utils.adam_optimizer(model=self.model, 
                             loss_fn=lambda: self.losses(),

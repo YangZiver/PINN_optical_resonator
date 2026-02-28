@@ -1,6 +1,8 @@
 # parameters.py
 import numpy as np
 from numpy.typing import NDArray
+import torch
+from torch import Tensor
 # neural networks parameters
 input_dim: int = 2
 output_dim: int = 2
@@ -38,11 +40,11 @@ Omega_g: float = 2.0 * (cc / wll - cc / wlh) * np.pi #disperison bandwidth
 # initial pulse at z = 0
 power: float = 0.8 # initial pulse power
 Chrip: float = 0.0
-initial_pulse: NDArray = (
-    np.sqrt(power)
+initial_pulse: Tensor = (
+    torch.sqrt(power)
     * 1
-    / np.cosh(T_grid / T0_width)
-    * np.exp(-1j * 0.5 * Chrip * (T_grid / T0_width) ** 2).copy()
+    / torch.cosh(T_grid / T0_width)
+    * torch.exp(-1j * 0.5 * Chrip * (T_grid / T0_width) ** 2)
 )
 # device parameters
 # EDF(Erbium-Doped Fiber)

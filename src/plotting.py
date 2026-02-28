@@ -21,20 +21,20 @@ def save_figure(fig: plt.Figure, base_path: str, dpi: int = 300) -> None:
     #fig.savefig(pdf_path, dpi=dpi, bbox_inches="tight")
     fig.savefig(png_path, dpi=150, bbox_inches="tight") 
 
-def save_data_npy(data: np.ndarray, filepath: str) -> None:
+def save_data_npy(data: NDArray, filepath: str) -> None:
     """save data in .npy"""
     ensure_dir(filepath)
     np.save(filepath, data)
 
-def save_data_txt(data: np.ndarray, filepath: str, header: str) -> None:
+def save_data_txt(data: NDArray, filepath: str, header: str) -> None:
     """optional, save data in .txt"""
     ensure_dir(filepath)
     np.savetxt(filepath, data, fmt="%10.6f", header=header, encoding="utf-8")
 
 # -------------------- general line plot --------------------
 def plot_line(
-    x: np.ndarray,
-    y: np.ndarray,
+    x: NDArray,
+    y: NDArray,
     section_name: str,
     plot_type: str,
     rounds: int,
@@ -75,8 +75,8 @@ def plot_line(
 
 # -------------------- plot application interface --------------------
 def plot_time(
-    T_grid: np.ndarray,
-    intensity: np.ndarray,
+    T_grid: NDArray,
+    intensity: NDArray,
     section_name: str,
     rounds: int,
 ) -> None:
@@ -95,8 +95,8 @@ def plot_time(
     )
 
 def plot_spec(
-    wave_len: np.ndarray,
-    spec_intensity: np.ndarray,
+    wave_len: NDArray,
+    spec_intensity: NDArray,
     section_name: str,
     rounds: int,
 ) -> None:
@@ -116,10 +116,10 @@ def plot_spec(
     )
 
 def plot_sampling_points(
-    z_pde: np.ndarray,
-    t_pde: np.ndarray,
-    z_ic: np.ndarray,
-    t_ic: np.ndarray,
+    z_pde: NDArray,
+    t_pde: NDArray,
+    z_ic: NDArray,
+    t_ic: NDArray,
     params: Dict[str, float],
     section_name: str,
     round_num: int,
