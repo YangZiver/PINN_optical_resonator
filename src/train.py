@@ -288,13 +288,13 @@ class Train:
             data_loss = torch.mean((u_data - self.ref_real) ** 2 + (v_data - self.ref_imag) ** 2)
         else:
             data_loss = torch.tensor(0.0, device=self.device)
-        total_loss =  data_loss
-        if not hasattr(self, "history"):
-            self.history = {
-                "total_loss": [],
-            }
-        self.history["total_loss"].append(total_loss.item())
-        return total_loss
+        # total_loss =  data_loss
+        # if not hasattr(self, "history"):
+        #     self.history = {
+        #         "total_loss": [],
+        #     }
+        # self.history["total_loss"].append(total_loss.item())
+        return data_loss
 
     def losses(self) -> torch.Tensor:
         """calcualte total loss"""
