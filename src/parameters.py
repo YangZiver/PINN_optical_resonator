@@ -21,7 +21,7 @@ lr_lbfgs: float = 0.01# L-bfgs optimizer learning rate
 num_epochs_adam: int = 10000  
 num_epochs_lbfgs: int = 2000  
 lbfgs_max_eval: int = 4000
-initial_weights: dict[str, int] = {"pde": 5, "ic": 1, "data": 5}
+initial_weights: dict[str, int] = {"pde": 5, "ic": 1, "data": 100}
 rounds: int = 200 # total train rounds
 # number of sampling points
 numIC: int = len(T_grid)  
