@@ -201,9 +201,9 @@ class Train:
         u_t = utils.gradients(u_pred, t) * d_t
         v_t = utils.gradients(v_pred, t) * d_t
         u_tt = utils.gradients(u_t, t) * d_t
-        u_ttt = utils.gradients(u_tt, t) * d_t
+        #u_ttt = utils.gradients(u_tt, t) * d_t
         v_tt = utils.gradients(v_t, t) * d_t
-        v_ttt = utils.gradients(v_tt, t) * d_t
+        #v_ttt = utils.gradients(v_tt, t) * d_t
         intensity_t = utils.gradients(intensity, t) * d_t
         messWithu_t = utils.gradients(messWithu, t) * d_t
         messWithv_t = utils.gradients(messWithv, t) * d_t
@@ -216,8 +216,8 @@ class Train:
             v_z,
             u_tt,
             v_tt,
-            u_ttt,
-            v_ttt,
+            # u_ttt,
+            # v_ttt,
             intensity_t,
             messWithu_t,
             messWithv_t,
@@ -243,8 +243,8 @@ class Train:
             v_z,
             u_tt,
             v_tt,
-            u_ttt,
-            v_ttt,
+            # u_ttt,
+            # v_ttt,
             intensity_t,
             messWithu_t,
             messWithv_t,
@@ -253,21 +253,21 @@ class Train:
             u_z
             + (alpha - g) / 2 * u
             - beta2 / 2 * v_tt
-            - beta3 / 6 * u_ttt
-            #- g / (2 * Omega_g**2) * u_tt
+            #- beta3 / 6 * u_ttt
+            - g / (2 * Omega_g**2) * u_tt
             + gamma * messWithv
             + gamma / omega0 * messWithu_t
-            #- gamma * T_R * v * intensity_t
+            - gamma * T_R * v * intensity_t
         )
         residual_imag = (
             v_z
             + (alpha - g) / 2 * v
             + beta2 / 2 * u_tt
-            - beta3 / 6 * v_ttt
-            #- g / (2 * Omega_g**2) * v_tt
+            #- beta3 / 6 * v_ttt
+            - g / (2 * Omega_g**2) * v_tt
             - gamma * messWithu
             + gamma / omega0 * messWithv_t
-            #+ gamma * T_R * u * intensity_t
+            + gamma * T_R * u * intensity_t
         )
         pde_loss = torch.mean(residual_real**2 + residual_imag**2)
         return pde_loss
