@@ -111,7 +111,7 @@ def plot_spec(
         ylabel="Normalized Intensity",
         title="Spectrum",
         xlim=(1545, 1575),
-        ylim=(0.6, 1.1),
+        ylim=(0.0, 1.1),
         #data_header="Wavelength(nm) NormIntensity(dB)",
     )
 
