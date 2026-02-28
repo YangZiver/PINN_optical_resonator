@@ -279,8 +279,8 @@ class Train:
     def data_loss(self) -> Tensor:
         """calculate data loss"""
         self.load_reference_output(self.rounds, self.section_name)
-        if hasattr(self, 'z_data') and self.z_data is not None:
-            u_data, v_data = self.model(self.z_data, self.t_data)
+        if hasattr(self, 'z_data') and self.z_end is not None:
+            u_data, v_data = self.model(self.z_end, self.t_end)
             data_loss = torch.mean((u_data - self.ref_real) ** 2 + (v_data - self.ref_imag) ** 2)
         else:
             data_loss = torch.tensor(0.0, device=self.device)
