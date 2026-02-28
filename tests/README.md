@@ -1,5 +1,5 @@
 # Introduction
-- author: 杨张福
+- author: YangZiver
 - date: 2026/2/26
 - revise content:
   1. add fourier feature embedding, solve the issue: hard to handle high frequency part
