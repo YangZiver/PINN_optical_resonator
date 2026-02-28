@@ -16,7 +16,7 @@ T_min: float = -T_window / 2
 T_max: float = T_window / 2
 T_grid: NDArray = np.linspace(T_min, T_max, 8192, endpoint=False)
 # train PINN
-lr_adam: float = 1e-3# Adam optimizer learning rate
+lr_adam: float = 1e-4# Adam optimizer learning rate
 lr_lbfgs: float = 0.01# L-bfgs optimizer learning rate  
 num_epochs_adam: int = 10000  
 num_epochs_lbfgs: int = 2000  
