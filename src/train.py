@@ -140,7 +140,7 @@ class Train:
         return (u + 1j * v).squeeze()
 
     def compute_intensity_and_spectrum(self,
-                                       pulse: Tensor) -> tuple[NDArray, NDArray]:
+                                       pulse: Tensor) -> tuple[Tensor, Tensor]:
         """compute pulse intensity and specturm intensity"""
         intensity = torch.abs(pulse) ** 2
         spec_complex = torch.fft.fftshift(torch.fft.fft(pulse))
@@ -197,9 +197,9 @@ class Train:
         u_t = utils.gradients(u_pred, t) * d_t
         v_t = utils.gradients(v_pred, t) * d_t
         u_tt = utils.gradients(u_t, t) * d_t
-        #u_ttt = utils.gradients(u_tt, t) * d_t
+        u_ttt = utils.gradients(u_tt, t) * d_t
         v_tt = utils.gradients(v_t, t) * d_t
-        #v_ttt = utils.gradients(v_tt, t) * d_t
+        v_ttt = utils.gradients(v_tt, t) * d_t
         intensity_t = utils.gradients(intensity, t) * d_t
         messWithu_t = utils.gradients(messWithu, t) * d_t
         messWithv_t = utils.gradients(messWithv, t) * d_t
@@ -212,8 +212,8 @@ class Train:
             v_z,
             u_tt,
             v_tt,
-            # u_ttt,
-            # v_ttt,
+            u_ttt,
+            v_ttt,
             intensity_t,
             messWithu_t,
             messWithv_t,
@@ -239,8 +239,8 @@ class Train:
             v_z,
             u_tt,
             v_tt,
-            # u_ttt,
-            # v_ttt,
+            u_ttt,
+            v_ttt,
             intensity_t,
             messWithu_t,
             messWithv_t,
@@ -249,7 +249,7 @@ class Train:
             u_z
             + (alpha - g) / 2 * u
             - beta2 / 2 * v_tt
-            #- beta3 / 6 * u_ttt
+            - beta3 / 6 * u_ttt
             - g / (2 * Omega_g**2) * u_tt
             + gamma * messWithv
             + gamma / omega0 * messWithu_t
@@ -259,7 +259,7 @@ class Train:
             v_z
             + (alpha - g) / 2 * v
             + beta2 / 2 * u_tt
-            #- beta3 / 6 * v_ttt
+            - beta3 / 6 * v_ttt
             - g / (2 * Omega_g**2) * v_tt
             - gamma * messWithu
             + gamma / omega0 * messWithv_t
@@ -281,34 +281,28 @@ class Train:
         self.load_reference_output(self.rounds, self.section_name)
         u_data, v_data = self.model(self.z_end, self.t_end)
         data_loss = torch.mean((u_data - self.ref_real) ** 2 + (v_data - self.ref_imag) ** 2)
-        # total_loss =  data_loss
-        # if not hasattr(self, "history"):
-        #     self.history = {
-        #         "total_loss": [],
-        #     }
-        # self.history["total_loss"].append(total_loss.item())
         return data_loss
 
     def losses(self) -> Tensor:
         """calcualte total loss"""
-        #pde_w = parameters.initial_weights['pde']
-        #ic_w = parameters.initial_weights['ic']
+        pde_w = parameters.initial_weights['pde']
+        ic_w = parameters.initial_weights['ic']
         #data_w = parameters.initial_weights['data']
-        #self.pde_loss_val = self.pde_loss()
-        #self.ic_loss_val = self.ic_loss()
+        self.pde_loss_val = self.pde_loss()
+        self.ic_loss_val = self.ic_loss()
         self.data_loss_val = self.data_loss()
         self.total_loss = self.data_loss_val
         if not hasattr(self, "history"):
             self.history = {
                 "total_loss": [],
-                #"pde_loss": [],
-                #"ic_loss": [],
-                "data_loss": [],
+                "pde_loss": [],
+                "ic_loss": [],
+                #"data_loss": [],
             }
         self.history["total_loss"].append(self.total_loss.item())
-        #self.history["pde_loss"].append(self.pde_loss_val.item())
-        #self.history["ic_loss"].append(self.ic_loss_val.item())
-        self.history["data_loss"].append(self.data_loss_val.item())
+        self.history["pde_loss"].append(self.pde_loss_val.item())
+        self.history["ic_loss"].append(self.ic_loss_val.item())
+        #self.history["data_loss"].append(self.data_loss_val.item())
         return self.total_loss
     
     def load_reference_output(self,

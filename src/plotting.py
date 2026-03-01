@@ -108,7 +108,7 @@ def plot_spec(
         plot_type="spec",
         rounds=rounds,
         xlabel="Wavelength (nm)",
-        ylabel="Normalized Intensity",
+        ylabel="Normalized Intensity (dB)",
         title="Spectrum",
         xlim=(1545, 1575),
         ylim=(0.0, 1.1),
@@ -171,7 +171,7 @@ def plot_loss_history(
     ax.set_ylabel("Total Loss")
     ax.set_title(f"{section_name} - Total Loss (Round {round_num})")
     ax.grid(True, alpha=0.3)
-    # pde loss, ic loss, data loss
+    # pde loss, ic loss, data loss(optional)
     ax = axes[1]
     #ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
     #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
@@ -186,8 +186,8 @@ def plot_loss_history(
     # all losses comprison
     ax = axes[2]
     ax.semilogy(epochs, loss_history["total_loss"], "b-", linewidth=2, alpha=0.7, label="Total")
-    #ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=1, alpha=0.7, label="PDE")
-    #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=1, alpha=0.7, label="IC")
+    ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=1, alpha=0.7, label="PDE")
+    ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=1, alpha=0.7, label="IC")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=1, alpha=0.7, label="Data")
     ax.set_xlabel("Epoch")
@@ -205,17 +205,17 @@ def plot_loss_history(
         loss_data = np.column_stack((
             epochs,
             loss_history["total_loss"],
-            # loss_history["pde_loss"],
-            #loss_history["ic_loss"],
-            loss_history["data_loss"],
+            loss_history["pde_loss"],
+            loss_history["ic_loss"],
+            #loss_history["data_loss"],
         ))
         #header = "Epoch Total_Loss PDE_Loss IC_Loss Data_Loss"
     else:
         loss_data = np.column_stack((
             epochs,
             loss_history["total_loss"],
-            #loss_history["pde_loss"],
-            #loss_history["ic_loss"],
+            loss_history["pde_loss"],
+            loss_history["ic_loss"],
         ))
         #header = "Epoch Total_Loss PDE_Loss IC_Loss"
     data_path = os.path.join("Data", section_name, f"loss_data_round{round_num}.npy")
