@@ -173,8 +173,8 @@ def plot_loss_history(
     ax.grid(True, alpha=0.3)
     # pde loss, ic loss, data loss(optional)
     ax = axes[1]
-    #ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
-    #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
+    ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
+    ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=2, label="Data Loss")
     ax.set_xlabel("Epoch")
