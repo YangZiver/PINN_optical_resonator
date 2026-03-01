@@ -174,7 +174,7 @@ def plot_loss_history(
     # pde loss, ic loss, data loss
     ax = axes[1]
     ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
-    ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
+    #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=2, label="Data Loss")
     ax.set_xlabel("Epoch")
@@ -187,7 +187,7 @@ def plot_loss_history(
     ax = axes[2]
     ax.semilogy(epochs, loss_history["total_loss"], "b-", linewidth=2, alpha=0.7, label="Total")
     ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=1, alpha=0.7, label="PDE")
-    ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=1, alpha=0.7, label="IC")
+    #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=1, alpha=0.7, label="IC")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=1, alpha=0.7, label="Data")
     ax.set_xlabel("Epoch")
@@ -206,7 +206,7 @@ def plot_loss_history(
             epochs,
             loss_history["total_loss"],
             loss_history["pde_loss"],
-            loss_history["ic_loss"],
+            #loss_history["ic_loss"],
             loss_history["data_loss"],
         ))
         #header = "Epoch Total_Loss PDE_Loss IC_Loss Data_Loss"
@@ -215,7 +215,7 @@ def plot_loss_history(
             epochs,
             loss_history["total_loss"],
             loss_history["pde_loss"],
-            loss_history["ic_loss"],
+            #loss_history["ic_loss"],
         ))
         #header = "Epoch Total_Loss PDE_Loss IC_Loss"
     data_path = os.path.join("Data", section_name, f"loss_data_round{round_num}.npy")
