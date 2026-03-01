@@ -290,8 +290,8 @@ class Train:
         #data_w = parameters.initial_weights['data']
         self.pde_loss_val = self.pde_loss()
         self.ic_loss_val = self.ic_loss()
-        self.data_loss_val = self.data_loss()
-        self.total_loss = self.data_loss_val
+        #self.data_loss_val = self.data_loss()
+        self.total_loss = pde_w * self.pde_loss_val + ic_w * self.ic_loss_val
         if not hasattr(self, "history"):
             self.history = {
                 "total_loss": [],
