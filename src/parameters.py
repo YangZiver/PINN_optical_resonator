@@ -1,8 +1,6 @@
 # parameters.py
 import numpy as np
 from numpy.typing import NDArray
-import torch
-from torch import Tensor
 # neural networks parameters
 input_dim: int = 2
 output_dim: int = 2
