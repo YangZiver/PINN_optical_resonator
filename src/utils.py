@@ -76,7 +76,7 @@ def latin_hypercube_sampling(
 def adam_optimizer(model: torch.nn.Module,
                   loss_fn: Callable[[], Tensor],
                   model_name: str) -> None:
-    optimizer_adam = torch.optim.Adam(model.parameters(), lr=parameters.lr_adam)
+    optimizer_adam = torch.optim.AdamW(model.parameters(), lr=parameters.lr_adam)
     for epoch in range(parameters.num_epochs_adam):
         optimizer_adam.zero_grad()
         loss = loss_fn()
