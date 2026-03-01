@@ -291,23 +291,22 @@ class Train:
 
     def losses(self) -> Tensor:
         """calcualte total loss"""
-        pde_w = parameters.initial_weights['pde']
+        #pde_w = parameters.initial_weights['pde']
         #ic_w = parameters.initial_weights['ic']
-        data_w = parameters.initial_weights['data']
-        self.pde_loss_val = self.pde_loss()
+        #data_w = parameters.initial_weights['data']
+        #self.pde_loss_val = self.pde_loss()
         #self.ic_loss_val = self.ic_loss()
         self.data_loss_val = self.data_loss()
-        self.total_loss = pde_w * self.pde_loss_val #+ ic_w * self.ic_loss_val \
-        + data_w * self.data_loss_val
+        self.total_loss = self.data_loss_val
         if not hasattr(self, "history"):
             self.history = {
                 "total_loss": [],
-                "pde_loss": [],
+                #"pde_loss": [],
                 #"ic_loss": [],
                 "data_loss": [],
             }
         self.history["total_loss"].append(self.total_loss.item())
-        self.history["pde_loss"].append(self.pde_loss_val.item())
+        #self.history["pde_loss"].append(self.pde_loss_val.item())
         #self.history["ic_loss"].append(self.ic_loss_val.item())
         self.history["data_loss"].append(self.data_loss_val.item())
         return self.total_loss

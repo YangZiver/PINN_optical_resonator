@@ -173,7 +173,7 @@ def plot_loss_history(
     ax.grid(True, alpha=0.3)
     # pde loss, ic loss, data loss
     ax = axes[1]
-    ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
+    #ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=2, label="PDE Loss")
     #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=2, label="IC Loss")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=2, label="Data Loss")
@@ -186,7 +186,7 @@ def plot_loss_history(
     # all losses comprison
     ax = axes[2]
     ax.semilogy(epochs, loss_history["total_loss"], "b-", linewidth=2, alpha=0.7, label="Total")
-    ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=1, alpha=0.7, label="PDE")
+    #ax.semilogy(epochs, loss_history["pde_loss"], "r-", linewidth=1, alpha=0.7, label="PDE")
     #ax.semilogy(epochs, loss_history["ic_loss"], "g-", linewidth=1, alpha=0.7, label="IC")
     if "data_loss" in loss_history:
         ax.semilogy(epochs, loss_history["data_loss"], "m-", linewidth=1, alpha=0.7, label="Data")
@@ -205,7 +205,7 @@ def plot_loss_history(
         loss_data = np.column_stack((
             epochs,
             loss_history["total_loss"],
-            loss_history["pde_loss"],
+            # loss_history["pde_loss"],
             #loss_history["ic_loss"],
             loss_history["data_loss"],
         ))
@@ -214,7 +214,7 @@ def plot_loss_history(
         loss_data = np.column_stack((
             epochs,
             loss_history["total_loss"],
-            loss_history["pde_loss"],
+            #loss_history["pde_loss"],
             #loss_history["ic_loss"],
         ))
         #header = "Epoch Total_Loss PDE_Loss IC_Loss"
