@@ -18,7 +18,7 @@ class Train:
         self.rounds = rounds
         self.params = params
         self.input_pulse = input_pulse
-        if self.rounds < 1:
+        if self.rounds < 201:
             use_fourier = False
         else:
             use_fourier = True
